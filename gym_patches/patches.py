@@ -16,6 +16,7 @@ def custom_track_user_registration(user, profile, params, third_party_provider, 
             del extrainfo_dict['id']
             extrainfo = json.dumps(extrainfo_dict)
         except Exception:
+            log.exception("Exception in extrainfo_dict: {}".format(e))
             extrainfo = ''
 
         traits = {

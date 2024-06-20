@@ -5,7 +5,7 @@ from django.views.decorators.http import require_POST
 from opaque_keys.edx.keys import CourseKey
 from openedx.core.lib.courses import get_course_by_id
 from lms.djangoapps.certificates import api as certs_api
-from lms.djangoapps.grades.api import is_course_passed
+from lms.djangoapps.courseware.views.views import is_course_passed
 from lms.djangoapps.certificates.exceptions import CertificateGenerationNotAllowed
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
 from openedx.core.djangoapps.user_authn.views.register import _track_user_registration as original_track_user_registration

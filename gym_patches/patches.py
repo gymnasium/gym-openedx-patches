@@ -9,6 +9,12 @@ from lms.djangoapps.courseware.views.views import is_course_passed
 # from lms.djangoapps.certificates.exceptions import CertificateGenerationNotAllowed
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
 from openedx.core.djangoapps.user_authn.views.register import _track_user_registration as original_track_user_registration
+from common.djangoapps.course_modes.models import CourseMode
+from django.conf import settings
+import datetime
+from pytz import UTC
+
+from common.djangoapps.track import segment
 
 logger = logging.getLogger(__name__)
 
@@ -91,12 +97,9 @@ def custom_track_user_registration(user, profile, params, third_party_provider, 
     """ Track the user's registration with custom market field. """
     if hasattr(settings, 'LMS_SEGMENT_KEY') and settings.LMS_SEGMENT_KEY:
         try:
-            extrainfo_dict = user.extrainfo.__dict__
-            del extrainfo_dict['user_id']
-            del extrainfo_dict['_user_cache']
-            del extrainfo_dict['_state']
-            del extrainfo_dict['id']
-            extrainfo = json.dumps(extrainfo_dict)
+            market = user.extrainfo.market
+            extrainfo = {}
+            extrainfo['market'] = market
         except Exception as e:
             logger.exception("Exception in extrainfo_dict: {}".format(e))
             extrainfo = ''
@@ -113,7 +116,6 @@ def custom_track_user_registration(user, profile, params, third_party_provider, 
             'is_marketable': is_marketable,
             'extrainfo': extrainfo  # Add the market field to the traits
         }
-        logger.info("##### traits ####### {}".format(traits))
 
         if settings.MARKETING_EMAILS_OPT_IN and params.get('marketing_emails_opt_in'):
             email_subscribe = 'subscribed' if is_marketable else 'unsubscribed'
@@ -141,7 +143,6 @@ def custom_track_user_registration(user, profile, params, third_party_provider, 
         segment_traits = dict(properties)
         segment_traits['user_id'] = user.id
         segment_traits['joined_date'] = user.date_joined.strftime("%Y-%m-%d")
-        logger.info("###### segment traits: {} and properties: {} ###########".format(segment_traits, properties))
         segment.track(
             user.id,
             "edx.bi.user.account.registered",

@@ -100,7 +100,6 @@ def custom_track_user_registration(user, profile, params, third_party_provider, 
         except Exception as e:
             logger.exception("Exception in extrainfo_dict: {}".format(e))
             extrainfo = ''
-
         traits = {
             'email': user.email,
             'username': user.username,
@@ -114,6 +113,7 @@ def custom_track_user_registration(user, profile, params, third_party_provider, 
             'is_marketable': is_marketable,
             'extrainfo': extrainfo  # Add the market field to the traits
         }
+        logger.info("##### traits ####### {}".format(traits))
 
         if settings.MARKETING_EMAILS_OPT_IN and params.get('marketing_emails_opt_in'):
             email_subscribe = 'subscribed' if is_marketable else 'unsubscribed'
@@ -141,6 +141,7 @@ def custom_track_user_registration(user, profile, params, third_party_provider, 
         segment_traits = dict(properties)
         segment_traits['user_id'] = user.id
         segment_traits['joined_date'] = user.date_joined.strftime("%Y-%m-%d")
+        logger.info("###### segment traits: {} and properties: {} ###########".format(segment_traits, properties))
         segment.track(
             user.id,
             "edx.bi.user.account.registered",
